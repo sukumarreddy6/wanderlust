@@ -46,24 +46,24 @@ main()
     });
 
 async function main() {
-    //await mongoose.connect(mongoUrl);
+    // await mongoose.connect(mongoUrl);
     await mongoose.connect(dbUrl);
 }
 
 // ==================================================
 // MIDDLEWARE
 // ==================================================
-// const store = MongoStore.create({
-//     mongoUrl: dbUrl,
-//     crypto:{
-//         secret:process.env.SECRET
-//     },
-//     touchAfter: 24 * 3600, // The session is only updated if at least 24 hours have passed since the last update. (in sec)
-// });
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto:{
+        secret:process.env.SECRET
+    },
+    touchAfter: 24 * 3600, // The session is only updated if at least 24 hours have passed since the last update. (in sec)
+});
 
-// store.on("error", ()=>{
-//     console.log("Error in Mongo Session Store", err);
-// });
+store.on("error", ()=>{
+    console.log("Error in Mongo Session Store", err);
+});
 
 const sessionOptions = {
     store, // new line
