@@ -93,6 +93,7 @@ body {
 }
 .container{
     flex:1;
+    max-width: 1800px !important;
 }/*Without: if your page has very little content, the footer might appear immediately after the content: */
 
 .edit-btn{
@@ -102,7 +103,9 @@ body {
 
 /* show page */
 .show-img{
-    height: 30vh;
+    height: 30rem;
+    width:100%;
+    object-fit: contain;
 }
 
 .btns{

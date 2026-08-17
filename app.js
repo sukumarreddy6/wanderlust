@@ -34,8 +34,8 @@ const User = require("./models/user.js");
 // DATABASE
 // ==================================================
 
-//const mongoUrl = "mongodb://127.0.0.1:27017/wanderlust";
-const dbUrl = process.env.ATLASDB_URL;
+const mongoUrl = "mongodb://127.0.0.1:27017/wanderlust";
+//const dbUrl = process.env.ATLASDB_URL;
 console.log("DB URL:", process.env.ATLASDB_URL);
 main()
     .then(() => {
@@ -46,27 +46,27 @@ main()
     });
 
 async function main() {
-    // await mongoose.connect(mongoUrl);
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(mongoUrl);
+    //await mongoose.connect(dbUrl);
 }
 
 // ==================================================
 // MIDDLEWARE
 // ==================================================
-const store = MongoStore.create({
-    mongoUrl: dbUrl,
-    crypto:{
-        secret:process.env.SECRET
-    },
-    touchAfter: 24 * 3600, // The session is only updated if at least 24 hours have passed since the last update. (in sec)
-});
+// const store = MongoStore.create({
+//     mongoUrl: dbUrl,
+//     crypto:{
+//         secret:process.env.SECRET
+//     },
+//     touchAfter: 24 * 3600, // The session is only updated if at least 24 hours have passed since the last update. (in sec)
+// });
 
-store.on("error", ()=>{
-    console.log("Error in Mongo Session Store", err);
-});
+// store.on("error", ()=>{
+//     console.log("Error in Mongo Session Store", err);
+// });
 
 const sessionOptions = {
-    store, // new line
+    // store, // new line
     secret:process.env.SECRET,
     resave: false,
     saveUninitialized: true,

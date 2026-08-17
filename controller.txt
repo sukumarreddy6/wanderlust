@@ -480,3 +480,29 @@ git config --global user.name "sukumargrn"
 git config --global user.email "puchalapallisukumar6@gmail.com"
 
 git commit -m "Add Project Files"
+
+Render 
+------
+new web service 
+build: npm install
+start: node app.js
+Advanced options, auto deployment off
+==> Exited with status 1
+reason: environmental variables are not loaded 
+
+Create a New Service 
+--------------------
+Environment Varibles 
+Configure Atlas 
+DB -- connected with local system (ip)
+now db connects with cloud 
+
+logs: check for deployment details
+
+add environment variables
+so settings and click connnect find the Outbound IP Addresses, make whitlist in atlas 
+for that go to network acces, ip access list add 
+
+manual deploy - build cache and deploy
+
+
