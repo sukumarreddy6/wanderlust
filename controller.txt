@@ -1,0 +1,477 @@
+MVC: Model, View, Controller
+MVC (Model-View-Controller) is a software architecture pattern that separates an application into three parts:
+    Model → Manages data and business logic.
+    View → Displays the user interface.
+    Controller → Handles requests and coordinates between Model and View.
+
+1. Model
+The Model is responsible for interacting with the database.
+In your project:
+models/
+    listing.js
+    review.js
+    user.js
+
+2. View
+The View is what the user sees.
+In Express, Views are EJS files.
+views/
+    listings/
+        index.ejs
+        show.ejs
+        new.ejs
+
+3. Controller
+The Controller receives requests from the browser.
+Example:
+GET /listings
+
+Implementation
+--------------
+create controller / listing.js
+add all callbacks from routes/listing.js to controller/listings.js
+
+MVC: Model, View, Controller 
+----------------------------
+Implement Design Pattern for Reviews & Users 
+
+router.route 
+------------
+Without router.route()
+    router.get("/", async (req, res) => {
+        // Show all listings
+    });
+    router.post("/", isLoggedIn, validateListing, async (req, res) => {
+        // Create a listing
+    });
+
+With router.route()
+    router.route("/")
+        .get(async (req, res) => {
+            // Show all listings
+        })
+        .post(isLoggedIn, validateListing, async (req, res) => {
+            // Create a listing
+        });
+
+implentation in routes folder 
+
+Restyle Reviews 
+---------------
+https://github.com/LunarLogic/starability
+
+css : starability-slot.css
+include in boilerplate - <link rel="stylesheet" href="/css/rating.css">
+
+html: 
+<fieldset class="starability-basic">
+  <legend>First rating:</legend>
+  <input type="radio" id="no-rate" class="input-no-rate" name="rating" value="0" checked aria-label="No rating." />
+  <input type="radio" id="first-rate1" name="rating" value="1" />
+  <label for="first-rate1" title="Terrible">1 star</label>
+  <input type="radio" id="first-rate2" name="rating" value="2" />
+  <label for="first-rate2" title="Not good">2 stars</label>
+  <input type="radio" id="first-rate3" name="rating" value="3" />
+  <label for="first-rate3" title="Average">3 stars</label>
+  <input type="radio" id="first-rate4" name="rating" value="4" />
+  <label for="first-rate4" title="Very good">4 stars</label>
+  <input type="radio" id="first-rate5" name="rating" value="5" />
+  <label for="first-rate5" title="Amazing">5 stars</label>
+</fieldset>
+
+Showing stars in created reviews 
+  <p class="starability-result" data-rating="3">
+    Rated: 3 stars
+  </p>
+
+Image Upload
+------------
+1. we cannot send files to the backend
+2. our backend only stored bson format & has size limit (hence cannot store files)
+
+Instead of storing images inside your project, most production apps upload them to a cloud storage service like Cloudinary and store only the returned URL in MongoDB.
+
+solution:
+1. form capable of sending files.
+2. 3rd party service, to save files, get link.
+3. save this link in mongo.
+
+Manipulate Form 
+---------------
+
+enctype = "multipart/form-data"
+<form method="POST" action="/listings" class="needs-validation" novalidate enctype ="multipart/form-data">
+
+
+<div class="mb-3">
+    <label class="form-label" for="image">Upload Image</label>
+    <input
+        type="file"
+        name="listing[image]"
+        class="form-control"
+        accept="image/*">
+</div>
+
+// we are using url-encoded for the form, but for parsing multipart/form-data we need to use multer
+npm i multer
+multer will not process any form which is not multipart
+require: const multer = require('multer')
+initialize: const upload = multer({dest: 'uploads/'})
+
+.post(upload.single('listing[image]') ,(req, res)=>{
+// INDEX & CREATE
+router.route("/")
+    .get(wrapAsync(listingController.index))
+    .post(upload.single('listing[image]') ,(req, res)=>{
+        // res.send(req.file);
+    });
+
+saves the file in our local storage, next storing in cloud 
+
+Cloud Setup
+-----------
+Cloudinary & .env file 
+
+create an account in cloudinary 
+
+.env - environment variables/ credentials (confidential data)
+format KEY = value 
+
+Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env.
+npm i dotenv
+
+require('dotenv').config();
+console.log(process.env.SECRET);
+
+// access env file only in development phase 
+if(process.env.NODE_ENV != "production"){
+    require('dotenv').config();
+    console.log(process.env.SECRET);
+}
+
+Storing Files in Cloud 
+----------------------
+Multer storage Cloudinary 
+npm i cloudinary 
+npm i multer-storage-cloudinary
+
+cloudConfig.js
+
+listing.js 
+----------
+const {storage} = require("../cloudConfig.js");
+const upload = multer({storage})
+
+FLOW
+----
+
+    form (file)
+        |
+    backend (parse)
+        |
+    cloud (store)
+        |
+    url/link(file)
+        |
+    store in mongodb
+
+Save Link in Mongo
+------------------
+Modify Image in schema 
+
+changes 
+module.exports.createListing = async (req, res) => {
+    let url = req.file.path;
+    let filename = req.file.filename;
+    const newListing = new Listing(req.body.listing);
+    newListing.owner = req.user._id;
+    newListing.image = {usr, filename};
+    await newListing.save();
+    req.flash("success","New Listing Created");
+    res.redirect("/listings");
+}
+
+router.route("/")
+    .get(wrapAsync(listingController.index))
+    .post(
+            isLoggedIn,
+            upload.single("listing[image]"),
+            validateListing,
+            wrapAsync(listingController.createListing)
+        );
+
+reinitialize data 
+    image:{
+      filename: "listingimage",
+      url: "https://images.unsplash.com/photo-1518684079-3c830dcef090?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZHViYWl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60",
+    },
+cd init 
+node index.js
+
+index.ejs
+        <img src="<%=listing.image.url%>" class="card-img-top" alt="listing-image" style="height: 20rem;" >
+show.ejs
+        <img src="<%=listing.image.url%>" class="card-img-top show-img" alt="listing_image">
+
+Edit Lisitng Image 
+------------------
+Edit Form 
+edit.ejs
+
+fix: making form capable of uploading files to backend, changing backend routes (upload image to cloudinary, get url), upload url to the backend.
+
+1.<form enctype="multipart/form-data">
+2.<div class="mb-3">
+    <label for="image" class="form-label">Upload Image</label>
+    <input
+        id="image"
+        name="listing[image]"
+        type="file"
+        class="form-control"
+    >
+</div>
+
+3. .put(
+        isLoggedIn,
+        isOwner,
+        upload.single("listing[image]"),
+        validateListing,
+        wrapAsync(listingController.updateListing)
+    )
+
+module.exports.updateListing = async (req, res) => {
+    const listing = await Listing.findByIdAndUpdate(
+        req.params.id,
+        { ...req.body.listing },
+        { runValidators: true, new: true }
+    );
+
+    if (req.file) {
+        listing.image = {
+            url: req.file.path,
+            filename: req.file.filename,
+        };
+        await listing.save();
+    }
+
+    req.flash("success", "Listing updated");
+    res.redirect(`/listings/${listing._id}`);
+};
+
+After adding a file upload
+Notice:
+enctype="multipart/form-data"
+This tells the browser:
+"I'm sending files along with text."
+What Multer does
+Your route:
+router.post(
+    "/",
+    upload.single("listing[image]"),
+    wrapAsync(listingController.createListing)
+);
+When the request arrives, Multer separates the request into two parts.
+Text fields
+Everything except the file becomes:
+req.body = {
+    listing: {
+        title: "Beach House",
+        price: "2500"
+    }
+}
+Uploaded file
+The uploaded image becomes:
+req.file = {
+    fieldname: "listing[image]",
+    originalname: "house.jpg",
+    filename: "wanderlust_DEV/abc123",
+    path: "https://res.cloudinary.com/...",
+    mimetype: "image/jpeg",
+    size: 245678
+}
+
+Image Preview for Edit Page 
+---------------------------
+
+Edit.js
+add a div before image tag showing the image 
+
+<div class="mb-3">
+    <img src="<%=listing.image.url%>" style="height:200px; width:250px"><br>
+</div>
+
+but, the image  which is uploaded in db is loaded, but here we dont want to load the same quality image here, we have to just provide a basic preview 
+- cloudinary provides some methods to do so,
+
+module.exports.renderEditForm = async (req, res) => {
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+        throw new ExpressError(404, "Listing not found");
+    }
+    let originalUrl = listing.image.url;
+    originalurl = originalUrl.replace("/upload", "/upload/h_300,w_250");
+    res.render("listings/edit.ejs", { listing, originalUrl });
+}
+
+// note it works only for cloudinary url 
+
+Getting Started with Maps 
+-------------------------
+using mapbox,
+
+#important varibles inside .env are not accessible in public folder
+How to pass a variable to the browser
+If you're using EJS, pass it when rendering the page.
+Controller
+res.render("listings/show", {
+    listing,
+    mapToken: process.env.MAP_TOKEN,
+});
+
+EJS
+<script>
+    const mapToken = "<%= mapToken %>";
+</script>
+<script src="/js/map.js"></script> // u can access mapToken in map.js
+Now map.js can use it if you expose it globally:
+<script>
+    window.mapToken = "<%= mapToken %>";
+</script>
+<script src="/js/map.js"></script>
+Then in public/js/map.js:0
+const mapToken = window.mapToken;
+
+in html <script> const a = 10; </script> <script src = "./index.js"></script> index.js can access variable 'a'
+// What about <script type="module">?
+If either script is a module:
+<script type="module">
+    const a = 10;
+</script>
+<script type="module" src="./index.js"></script>
+then index.js cannot access a, because each module has its own scope.
+
+Mongo Atlas
+-----------
+MongoDB Atlas is MongoDB's cloud database service. Instead of running MongoDB on your own computer, MongoDB hosts and manages it for you
+Local MongoDB
+When you're developing locally, your app connects to:
+mongodb://127.0.0.1:27017/wanderlust
+Your App
+    │
+    ▼
+Local MongoDB
+
+MongoDB Atlas
+With Atlas, your database is stored in the cloud.
+Your App
+    │
+    ▼
+Internet
+    │
+    ▼
+MongoDB Atlas
+
+Your app can access it from anywhere.
+
+Cloud Database Service
+----------------------
+const dbUrl = process.env.ATLASDB_URL;
+console.log("DB URL:", process.env.ATLASDB_URL);
+main()
+    .then(() => {
+        console.log("Connected to DB");
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+
+async function main() {
+    // await mongoose.connect(mongoUrl);
+    await mongoose.connect(dbUrl);
+}
+
+to see the url string: database -> clusters -> connect ->drivers 
+to create new user: security -> database & network access 
+
+Mongo Session Store 
+-------------------
+connect-mongo 
+
+npm i connect-mongo
+
+const session = require("express-session")
+const MongoStore = require("connect-mongo")
+
+const store = MongoStore.create({
+    mongoUrl: DB_URL,
+    crypto:{
+        secret: "mysecretcode"
+    },
+    touchAfter: 24 * 3600, // for lazy update 
+});
+
+const sessionOptions = {
+    store, 
+    secret:"mysupersecretstring",
+    resave: false,
+    saveUninitialized: true,
+    cookie:{
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+    }
+};
+
+session.cookie.expire (default 14 days)
+
+const MongoStore = require("connect-mongo"); error
+to fix it 
+The console.log output tells us exactly what's happening.
+require("connect-mongo") returns:
+{
+  MongoStore: [class MongoStore extends Store],
+  default: [class MongoStore extends Store],
+  ...
+}
+So MongoStore is an object, not the class itself. That's why:
+MongoStore.create(...)
+fails.
+You have two valid ways to import it.
+
+Deployment
+----------
+.render 
+.netlify 
+.cyclic etc
+
+start using render 
+------------------
+  "engines": {
+    "node": "22.14.0"
+  }, add this package.json else you will get error during deployment.
+
+our project(local system) ----> Github ----> deploy (render)
+suppose we made changes in our project, then add to github, and ask render to deploy the new copy 
+
+Pushing into github 
+-------------------
+never push .env file 
+and also node modules 
+
+git init 
+git status 
+
+# for mac system you will get .DS_Store you should not push it
+
+.gitignore 
+- .env
+- node_modules
+- mac (.DS_Store)
+
+.gitignore 
+.env
+node_modules/ (/ tells to ignore all node_modules)
+
+verify gitstatus
+
+git add . (git add all)
