@@ -34,8 +34,8 @@ const User = require("./models/user.js");
 // DATABASE
 // ==================================================
 
-const mongoUrl = "mongodb://127.0.0.1:27017/wanderlust";
-//const dbUrl = process.env.ATLASDB_URL;
+//const mongoUrl = "mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl = process.env.ATLASDB_URL;
 console.log("DB URL:", process.env.ATLASDB_URL);
 main()
     .then(() => {
@@ -46,8 +46,8 @@ main()
     });
 
 async function main() {
-    await mongoose.connect(mongoUrl);
-    //await mongoose.connect(dbUrl);
+    //await mongoose.connect(mongoUrl);
+    await mongoose.connect(dbUrl);
 }
 
 // ==================================================
@@ -66,7 +66,7 @@ async function main() {
 // });
 
 const sessionOptions = {
-    // store, // new line
+    store, // new line
     secret:process.env.SECRET,
     resave: false,
     saveUninitialized: true,
