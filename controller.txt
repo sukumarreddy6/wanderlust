@@ -475,3 +475,8 @@ node_modules/ (/ tells to ignore all node_modules)
 verify gitstatus
 
 git add . (git add all)
+
+git config --global user.name "sukumargrn" 
+git config --global user.email "puchalapallisukumar6@gmail.com"
+
+git commit -m "Add Project Files"
